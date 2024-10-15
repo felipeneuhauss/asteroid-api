@@ -58,6 +58,7 @@ router.delete('/favorites/:id', (req, res) => {
 router.get('/', async (req, res) => {
     const { endpoint, ...params } = req.query; 
   
+    console.log(endpoint, params);
     try {
       const response = await axios.get(`https://api.nasa.gov/neo/rest/v1/${endpoint}`, {
         params: {

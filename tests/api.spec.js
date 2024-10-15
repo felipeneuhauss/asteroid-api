@@ -36,7 +36,7 @@ test.describe('Asteroids API Endpoints', () => {
   });
 
   test('GET / - should fetch asteroids data from NASA API', async ({ request }) => {
-    const response = await request.get(`${BASE_URL}/asteroids`, {
+    const response = await request.get(`${BASE_URL}/`, {
       params: {
         endpoint: 'feed',
         start_date: '2023-01-01',
@@ -50,7 +50,7 @@ test.describe('Asteroids API Endpoints', () => {
 
   test('GET /:id - should fetch specific asteroid details', async ({ request }) => {
     const asteroidId = '3542519'; 
-    const response = await request.get(`${BASE_URL}/asteroids/${asteroidId}`);
+    const response = await request.get(`${BASE_URL}/${asteroidId}`);
     expect(response.status()).toBe(200);
     const data = await response.json();
     expect(data).toHaveProperty('id', asteroidId);

@@ -30,7 +30,7 @@ This is an API application built with Express.js that provides information about
    npm start
    ```
 
-The server will start on `http://localhost:3000` by default.
+The server will start on `http://localhost:9000` by default.
 
 ## Usage
 

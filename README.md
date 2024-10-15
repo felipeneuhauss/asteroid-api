@@ -63,9 +63,7 @@ The server will start on `http://localhost:9000` by default.
    - **Request Body** (JSON):
      ```json
      {
-       "id": "3542519",
-       "name": "Sample Asteroid",
-       "details": "Description of the asteroid."
+       "asteroid_id": "3542519"
      }
      ```
    - **Example Request**:

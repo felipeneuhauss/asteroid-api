@@ -15,9 +15,7 @@ test.describe('Asteroids API Endpoints', () => {
 
   test('POST /favorites - should add an asteroid to favorites', async ({ request }) => {
     const newAsteroid = {
-      id: '12345',
-      name: 'Test Asteroid',
-      details: 'Details of test asteroid',
+      asteroid_id: '12345'
     };
 
     const response = await request.post(`${BASE_URL}/favorites`, {

@@ -6,7 +6,7 @@ const cors = require('cors');
 
 const API_KEY = 'DEMO_KEY'; 
 
-// Enable CORS for all routes in this router
+
 router.use(cors());
 
 router.get('/favorites', (req, res) => {
@@ -20,24 +20,37 @@ router.get('/favorites', (req, res) => {
 });
 
 
-router.post('/favorites', (req, res) => {
+router.post('/favorites', async (req, res) => {
   const { asteroid_id } = req.body;
 
   try {
-    db.run(
-      `INSERT INTO favorites (asteroid_id) VALUES (?)`,
-      [asteroid_id],
-      (err) => {
-        if (err) {
-          console.log(err);
-          res.status(500).json({ error: 'Error adding to favorites.' });
-        } else {
-          res.status(201).json({ message: 'Asteroid added to favorites.' });
+  
+    const response = await axios.get(`https://api.nasa.gov/neo/rest/v1/neo/${asteroid_id}`, {
+      params: { api_key: API_KEY },
+    });
+
+    if (response.status === 200) {
+      db.run(
+        `INSERT INTO favorites (asteroid_id) VALUES (?)`,
+        [asteroid_id],
+        (err) => {
+          if (err) {
+            console.log(err);
+            res.status(500).json({ error: 'Error adding to favorites.' });
+          } else {
+            res.status(201).json({ message: 'Asteroid added to favorites.' });
+          }
         }
-      }
-    );
+      );
+    } else {
+      res.status(422).json({ error: 'Invalid asteroid ID.' });
+    }
   } catch (error) {
-    res.status(500).json({ error: 'Error adding to favorites.' });
+    if (error.response && error.response.status === 404) {
+      res.status(422).json({ error: 'Asteroid not found.' });
+    } else {
+      res.status(500).json({ error: 'Error adding to favorites.' });
+    }
   }
 });
 
@@ -55,21 +68,35 @@ router.delete('/favorites/:id', (req, res) => {
 });
 
 router.get('/', async (req, res) => {
-    const { endpoint = 'feed', ...params } = req.query; 
+  const { endpoint = 'feed', start_date, end_date, ...params } = req.query; 
 
-    try {
-      const response = await axios.get(`https://api.nasa.gov/neo/rest/v1/${endpoint}`, {
-        params: {
-          ...params, 
-          api_key: API_KEY, 
-        },
-      });
-      res.json(response.data); 
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ error: 'Error fetching data via proxy.' });
+  
+  if (start_date && end_date) {
+    const startDate = new Date(start_date);
+    const endDate = new Date(end_date);
+    const diffTime = Math.abs(endDate - startDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 7) {
+      return res.status(422).json({ error: 'Date range must not exceed 7 days.' });
     }
-  });
+  }
+
+  try {
+    const response = await axios.get(`https://api.nasa.gov/neo/rest/v1/${endpoint}`, {
+      params: {
+        ...params,
+        start_date,
+        end_date,
+        api_key: API_KEY, 
+      },
+    });
+    res.json(response.data); 
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Error fetching data via proxy.' });
+  }
+});
 
 
 router.get('/:id', async (req, res) => {
@@ -83,7 +110,12 @@ router.get('/:id', async (req, res) => {
     });
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching asteroid data.' });
+    if (error.response && error.response.status === 404) {
+      res.status(404).json({ error: 'Asteroid not found.' });
+    } else {
+      console.error('Error fetching asteroid data:', error.message);
+      res.status(500).json({ error: 'Error fetching asteroid data.' });
+    }
   }
 });
 

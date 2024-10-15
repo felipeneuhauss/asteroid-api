@@ -5,6 +5,9 @@ const { test, expect } = require('@playwright/test');
 const BASE_URL = 'http://localhost:9000/api/asteroids';
 
 test.describe('Asteroids API Endpoints', () => {
+  test.beforeEach(async () => {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  });
 
   test('GET /favorites - should retrieve favorites list', async ({ request }) => {
     const response = await request.get(`${BASE_URL}/favorites`);
@@ -15,7 +18,7 @@ test.describe('Asteroids API Endpoints', () => {
 
   test('POST /favorites - should add an asteroid to favorites', async ({ request }) => {
     const newAsteroid = {
-      asteroid_id: '12345'
+      asteroid_id: '3426410'
     };
 
     const response = await request.post(`${BASE_URL}/favorites`, {
@@ -27,7 +30,7 @@ test.describe('Asteroids API Endpoints', () => {
   });
 
   test('DELETE /favorites/:id - should delete a favorite asteroid', async ({ request }) => {
-    const response = await request.delete(`${BASE_URL}/favorites/12345`);
+    const response = await request.delete(`${BASE_URL}/favorites/3426410`);
     expect(response.status()).toBe(200);
     const data = await response.json();
     expect(data.message).toBe('Asteroid removed from favorites.');
